@@ -3,6 +3,19 @@ import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/User.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+const generateAccessTokens = async (userID) => {
+  try {
+    const user = await User.findById(userID);
+    if (!user) {
+      throw new ApiError(404, "User not found");
+    }
+    const accessToken = user.generateAuthToken();
+    return accessToken;
+  } catch (error) {
+    throw new ApiError(500, "Failed to generate access token");
+  }
+};
+
 const registerUser = asyncHandler(async (req, res) => {
   //
   //
@@ -55,6 +68,18 @@ const registerUser = asyncHandler(async (req, res) => {
 
   return res.status(201).json(new ApiResponse(201, createdUser, "User registered successfully"));
 })
-export { 
-    registerUser, 
+
+const loginUser= asyncHandler(async (req, res) => {
+    const { email, password, username } = req.body;
+    
+    if(!password || (!email && !username)){
+        throw new ApiError(400, "username/ email or password is required");
+    }
+    
+    return res.status(200).json(new ApiResponse(200, { user, token }, "Login successful"));
+});
+
+
+export {
+    registerUser, loginUser
 };
