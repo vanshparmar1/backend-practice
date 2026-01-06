@@ -102,22 +102,26 @@ const loginUser= asyncHandler(async (req, res) => {
           new ApiResponse(200,{ user: loggedInUser, accessToken, refreshToken })
         );
 });
+// ...existing code...
 const logoutUser = asyncHandler(async (req, res) => {
-  User.findByIdAndUpdate(req.user._id,{
-    $set: { refreshToken: undefined
-  }
-},{
-    new: true
-});  
+  // await DB update
+  await User.findByIdAndUpdate(
+    req.user._id,
+    { $set: { refreshToken: undefined } },
+    { new: true }
+  );
+
+  // use secure: false for local testing (true requires HTTPS)
   const options = {
     httpOnly: true,
-    secure: true}
-  });
-  return res.status(200)
-    .cookie("accessToken", "",  options )
-    .cookie("refreshToken", "",  options)
-    .json(new ApiResponse(200, null, "Logged out successfully"));
+    secure: false
+  };
 
-export {
-    registerUser, loginUser, logoutUser
-};
+  return res
+    .status(200)
+    .cookie("accessToken", "", options)
+    .cookie("refreshToken", "", options)
+    .json(new ApiResponse(200, null, "Logged out successfully"));
+});
+// ...existing code...
+export { registerUser, loginUser, logoutUser };
